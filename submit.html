@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>论文提交</title>
+<link rel="stylesheet" href="css/common.css">
+<style>
+body { background: #f3f4f6; padding: 16px; }
+.container { max-width: 600px; margin: 0 auto; }
+.page-title { text-align: center; padding: 24px 0; }
+.page-title h1 { font-size: 22px; color: #1e3a8a; margin-bottom: 4px; }
+.page-title p { color: #6b7280; font-size: 13px; }
+.section-title {
+  font-size: 14px; font-weight: 600; color: #6b7280;
+  margin: 24px 0 12px; padding-left: 8px; border-left: 3px solid #2563eb;
+}
+.author-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.author-row .input { flex: 1; }
+.author-row .remove-author {
+  width: 32px; height: 32px; border: 1px solid #ef4444; background: #fff;
+  color: #ef4444; border-radius: 8px; cursor: pointer; font-size: 16px; flex-shrink: 0;
+}
+.add-author {
+  background: #eff6ff; color: #2563eb; border: 1px dashed #93c5fd;
+  padding: 8px; border-radius: 8px; cursor: pointer; font-size: 13px; width: 100%; margin-top: 4px;
+}
+.file-drop {
+  border: 2px dashed #d1d5db; border-radius: 12px; padding: 24px;
+  text-align: center; cursor: pointer; background: #f9fafb; transition: all 0.2s;
+}
+.file-drop:hover { border-color: #2563eb; background: #eff6ff; }
+.file-drop.has-file { border-color: #10b981; background: #f0fdf4; padding: 16px; }
+.file-drop-icon { font-size: 40px; color: #9ca3af; }
+.file-drop.has-file .file-drop-icon { color: #10b981; font-size: 24px; }
+.file-list { margin-top: 8px; }
+.file-item {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;
+  font-size: 14px; background: #fff;
+}
+.file-item .name { flex: 1; word-break: break-all; }
+.file-item .size { color: #6b7280; font-size: 12px; white-space: nowrap; }
+.file-item .remove {
+  width: 26px; height: 26px; border: 1px solid #ef4444; background: #fff;
+  color: #ef4444; border-radius: 6px; cursor: pointer; font-size: 15px; line-height: 1; flex-shrink: 0;
+}
+.submit-bar {
+  position: sticky; bottom: 0; background: #fff; padding: 16px 0;
+  margin-top: 24px; border-top: 1px solid #e5e7eb;
+}
+.submit-bar .btn { width: 100%; }
+.success-page { text-align: center; padding: 40px 20px; }
+.success-icon { font-size: 64px; margin-bottom: 16px; }
+.success-title { font-size: 22px; color: #10b981; margin-bottom: 8px; }
+.success-msg { color: #6b7280; margin-bottom: 24px; }
+.success-detail {
+  background: #f9fafb; border-radius: 8px; padding: 16px;
+  margin: 16px 0; text-align: left; font-size: 14px;
+}
+.success-detail .row { display: flex; margin: 6px 0; }
+.success-detail .label { width: 80px; color: #6b7280; }
+.history-card { margin-top: 16px; background: #fff; border-radius: 12px; padding: 16px; }
+.history-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #374151; }
+.history-item { padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
+.history-item .title { font-weight: 600; margin-bottom: 4px; }
+.history-item .meta { color: #6b7280; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="container" id="formPage">
+  <div class="page-title">
+    <h1>📝 论文提交</h1>
+    <p>请如实填写论文信息，并上传论文附件</p>
+  </div>
+
+  <div class="card">
+    <div class="section-title">作者信息</div>
+    <div class="form-group">
+      <label class="form-label">提交人<span class="required">*</span></label>
+      <input type="text" class="input" id="submitter" placeholder="您的姓名">
+    </div>
+    <div class="form-group">
+      <label class="form-label">所属学院<span class="required">*</span></label>
+      <select class="select" id="department">
+        <option value="">请选择</option>
+        <option>机械工程学院</option>
+        <option>电气信息学院</option>
+        <option>财经商贸学院</option>
+        <option>基础教育学院</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">联系电话</label>
+      <input type="tel" class="input" id="phone" placeholder="便于联系（选填）">
+    </div>
+
+    <div class="section-title">论文信息</div>
+    <div class="form-group">
+      <label class="form-label">论文标题<span class="required">*</span></label>
+      <input type="text" class="input" id="title" placeholder="完整论文题目">
+    </div>
+    <div class="section-title">作者列表（可多个）</div>
+    <div id="authorsList"></div>
+    <button class="add-author" onclick="addAuthor()">+ 添加作者</button>
+
+    <div class="section-title">论文附件<span class="required">*</span></div>
+    <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
+      <div class="file-drop-icon">📄</div>
+      <div>点击上传论文附件（可多选）</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:4px">
+        支持 .doc / .docx / .pdf，单个 ≤ 20MB
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept=".doc,.docx,.pdf" multiple style="display:none">
+    <div class="file-list" id="fileList"></div>
+
+    <div class="form-group mt-4">
+      <label class="form-label">备注</label>
+      <textarea class="textarea" id="note" placeholder="特殊说明（选填）"></textarea>
+    </div>
+  </div>
+
+  <div class="submit-bar">
+    <button class="btn btn-primary btn-lg" id="submitBtn" onclick="handleSubmit()">提交论文</button>
+  </div>
+
+  <div class="card mt-4" id="historySection" style="display:none">
+    <div class="history-title">📋 我的提交记录</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<!-- 提交成功页 -->
+<div class="container" id="successPage" style="display:none">
+  <div class="success-page">
+    <div class="success-icon">✅</div>
+    <div class="success-title">提交成功！</div>
+    <div class="success-msg">您的论文已成功提交，请等待审核</div>
+    <div class="success-detail" id="successDetail"></div>
+    <button class="btn btn-primary btn-lg" style="width:100%" onclick="location.reload()">
+      再提交一篇
+    </button>
+    <button class="btn btn-outline mt-3" style="width:100%" onclick="showHistory()">
+      查看我的提交记录
+    </button>
+  </div>
+</div>
+
+<script src="js/utils.js"></script>
+<script>
+let selectedFiles = []; // {file: File, name, size}
+let myPapers = [];
+const ALLOWED_EXT = ['.doc', '.docx', '.pdf'];
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const LAST_SUBMITTER_KEY = 'paper_sys_lastSubmitter';
+
+// 初始化作者输入框
+const authorsHTML = `
+  <div class="author-row">
+    <input type="text" class="input author-input" placeholder="第一作者">
+    <button class="remove-author" onclick="this.parentElement.remove(); updateAuthorNames()" style="display:none">×</button>
+  </div>
+`;
+document.getElementById('authorsList').innerHTML = authorsHTML;
+updateAuthorNames();
+
+function updateAuthorNames() {
+  const inputs = document.querySelectorAll('.author-input');
+  inputs.forEach((input, idx) => {
+    input.placeholder = ['第一作者', '第二作者', '第三作者', '第四作者'][idx] || `第${idx + 1}作者`;
+    const btn = input.nextElementSibling;
+    if (btn) btn.style.display = idx === 0 ? 'none' : 'block';
+  });
+}
+
+function addAuthor() {
+  const container = document.getElementById('authorsList');
+  if (container.children.length >= 4) {
+    showToast('最多支持 4 位作者', 'warning');
+    return;
+  }
+  const row = document.createElement('div');
+  row.className = 'author-row';
+  row.innerHTML = `
+    <input type="text" class="input author-input" placeholder="作者">
+    <button class="remove-author" onclick="this.parentElement.remove(); updateAuthorNames()">×</button>
+  `;
+  container.appendChild(row);
+  updateAuthorNames();
+}
+
+// 文件选择（支持多选，可多次追加）
+document.getElementById('fileInput').addEventListener('change', e => {
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  let rejected = '';
+  for (const file of files) {
+    const ext = ('.' + (file.name.split('.').pop() || '')).toLowerCase();
+    if (!ALLOWED_EXT.includes(ext)) { rejected = '仅支持 .doc / .docx / .pdf 文件'; continue; }
+    if (file.size > MAX_FILE_SIZE) { rejected = `"${file.name}" 超过 20MB`; continue; }
+    const dup = selectedFiles.find(f => f.name === file.name && f.size === file.size);
+    if (!dup) selectedFiles.push({ file, name: file.name, size: file.size });
+  }
+  if (rejected) showToast(rejected, 'warning');
+  renderFileList();
+});
+
+function removeFile(idx) {
+  selectedFiles.splice(idx, 1);
+  renderFileList();
+}
+
+function renderFileList() {
+  const list = document.getElementById('fileList');
+  const drop = document.getElementById('fileDrop');
+  if (selectedFiles.length === 0) {
+    drop.classList.remove('has-file');
+    drop.innerHTML = `
+      <div class="file-drop-icon">📄</div>
+      <div>点击上传论文附件（可多选）</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:4px">
+        支持 .doc / .docx / .pdf，单个 ≤ 20MB
+      </div>`;
+    list.innerHTML = '';
+    return;
+  }
+  drop.classList.add('has-file');
+  drop.innerHTML = `
+    <div class="file-drop-icon">📄</div>
+    <div style="font-weight:600">已选 ${selectedFiles.length} 个文件，点击可继续添加</div>`;
+  list.innerHTML = selectedFiles.map((f, i) => `
+    <div class="file-item">
+      <span class="name">📄 ${escapeHTML(f.name)}</span>
+      <span class="size">${formatSize(f.size)}</span>
+      <button class="remove" type="button" onclick="removeFile(${i})" title="移除此文件">×</button>
+    </div>`).join('');
+}
+
+// 提交
+async function handleSubmit() {
+  const submitter = document.getElementById('submitter').value.trim();
+  const department = document.getElementById('department').value.trim();
+  const title = document.getElementById('title').value.trim();
+
+  if (!submitter) return showToast('请填写提交人', 'error');
+  if (!department) return showToast('请选择所属学院', 'error');
+  if (!title) return showToast('请填写论文标题', 'error');
+  if (selectedFiles.length === 0) return showToast('请上传论文附件', 'error');
+
+  const authors = Array.from(document.querySelectorAll('.author-input'))
+    .map(i => i.value.trim()).filter(Boolean);
+  if (authors.length === 0) authors.push(submitter);
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '正在上传...';
+
+  try {
+    // 使用 FormData 直接上传文件（不需要 base64 转换）
+    const formData = new FormData();
+    formData.append('submitter', submitter);
+    formData.append('department', department);
+    formData.append('phone', document.getElementById('phone').value.trim());
+    formData.append('title', title);
+    formData.append('authors', JSON.stringify(authors));
+    formData.append('note', document.getElementById('note').value.trim());
+    for (const sf of selectedFiles) {
+      formData.append('files', sf.file);
+    }
+
+    const result = await API.upload('/api/papers', formData);
+
+    if (result.success) {
+      localStorage.setItem(LAST_SUBMITTER_KEY, submitter);
+      selectedFiles = [];
+      renderFileList();
+      showSuccessPage({ title, submitter, department, authors });
+      loadMyHistory();
+    } else {
+      showToast(result.error || '提交失败', 'error');
+    }
+  } catch (e) {
+    showToast('提交失败：' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '提交论文';
+  }
+}
+
+function showSuccessPage(info) {
+  document.getElementById('formPage').style.display = 'none';
+  document.getElementById('successPage').style.display = 'block';
+  document.getElementById('successDetail').innerHTML = `
+    <div class="row"><div class="label">标题</div><div>${escapeHTML(info.title)}</div></div>
+    <div class="row"><div class="label">提交人</div><div>${escapeHTML(info.submitter)}</div></div>
+    <div class="row"><div class="label">学院</div><div>${escapeHTML(info.department)}</div></div>
+    <div class="row"><div class="label">作者</div><div>${info.authors.map(escapeHTML).join('、')}</div></div>
+    <div class="row"><div class="label">时间</div><div>${formatTime(Date.now())}</div></div>
+  `;
+}
+
+async function loadMyHistory() {
+  const submitter = localStorage.getItem(LAST_SUBMITTER_KEY) ||
+    document.getElementById('submitter').value.trim();
+  if (!submitter) return;
+
+  try {
+    myPapers = await API.get('/api/papers?submitter=' + encodeURIComponent(submitter));
+    myPapers.sort((a, b) => b.submitTime - a.submitTime);
+    renderHistory();
+  } catch (e) {
+    console.error('加载历史记录失败', e);
+  }
+}
+
+function renderHistory() {
+  const section = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+  if (!myPapers.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  const statusMap = {
+    pending: ['待审核', 'badge-pending'],
+    approved: ['已通过', 'badge-approved'],
+    rejected: ['已退回', 'badge-rejected'],
+    excellent: ['优秀', 'badge-excellent']
+  };
+  list.innerHTML = myPapers.map(p => {
+    const [s, cls] = statusMap[p.status || 'pending'] || ['待审核', 'badge-pending'];
+    return `
+      <div class="history-item">
+        <div class="title">${escapeHTML(p.title)}</div>
+        <div class="meta">
+          ${escapeHTML(p.department)} · ${formatTime(p.submitTime)} ·
+          <span class="badge ${cls}">${s}</span>
+          ${p.remark ? ` · 审核意见：${escapeHTML(p.remark)}` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showHistory() {
+  document.getElementById('successPage').style.display = 'none';
+  document.getElementById('formPage').style.display = 'block';
+}
+
+// 自动填入上次提交人姓名
+const lastSubmitter = localStorage.getItem(LAST_SUBMITTER_KEY);
+if (lastSubmitter) {
+  document.getElementById('submitter').value = lastSubmitter;
+  loadMyHistory();
+}
+</script>
+
+</body>
+</html>
