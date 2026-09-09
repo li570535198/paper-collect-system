@@ -1,0 +1,13 @@
+{
+  "name": "paper-collection-cloud",
+  "version": "2.0.0",
+  "description": "学校论文收集系统 - 云端版",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
